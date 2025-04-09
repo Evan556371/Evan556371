@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Family Welfare Payments</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f4;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    .hidden {
+      display: none;
+    }
+    #admin-section {
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Family Welfare Payments Tracker (Ksh 200/month)</h2>
+
+<div id="admin-section">
+  <input type="password" id="adminPass" placeholder="Enter admin password">
+  <button onclick="checkAdmin()">Login as Admin</button>
+</div>
+
+<table id="paymentsTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Mar 2025</th>
+      <th>Apr 2025</th>
+      <th>May 2025</th>
+      <th>Jun 2025</th>
+      <th>Jul 2025</th>
+      <!-- Add more months as needed -->
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <tr>
+      <td contenteditable="false">Esther</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+      <td contenteditable="false">❌</td>
+    </tr>
+    <tr>
+      <td contenteditable="false">Mwanyumba</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+  function checkAdmin() {
+    const password = document.getElementById("adminPass").value;
+    if (password === "admin123") { // Change to your preferred secret
+      const cells = document.querySelectorAll("td");
+      cells.forEach(cell => {
+        cell.setAttribute("contenteditable", "true");
+      });
+      alert("Admin mode activated. You can now edit the table.");
+    } else {
+      alert("Incorrect password.");
+    }
+  }
+</script>
+
+</body>
+</html>

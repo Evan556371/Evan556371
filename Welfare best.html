@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Family Welfare Payments</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f0f0f0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    .admin-controls {
+      margin-bottom: 15px;
+    }
+    input[type="password"], input[type="text"], button {
+      padding: 6px;
+      margin-top: 5px;
+    }
+    input[type="text"] {
+      width: 150px;
+    }
+    button {
+      padding: 6px 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Family Welfare Payments Tracker (Ksh 200/month)</h2>
+
+<div class="admin-controls">
+  <input type="password" id="adminPass" placeholder="Enter admin password">
+  <button onclick="activateAdmin()">Login as Admin</button>
+  <button onclick="saveData()">Save Changes</button>
+  <hr>
+  <input type="text" id="newMonth" placeholder="Enter new month (e.g., Aug 2025)">
+  <button onclick="addMonth()">Add Month</button>
+  <input type="text" id="newName" placeholder="Enter new member name">
+  <button onclick="addMember()">Add Member</button>
+</div>
+
+<table id="paymentsTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Mar 2025</th>
+      <th>Apr 2025</th>
+      <th>May 2025</th>
+      <th>Jun 2025</th>
+      <th>Jul 2025</th>
+      <!-- Add more months dynamically -->
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <tr>
+      <td>Esther</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+      <td contenteditable="false">❌</td>
+    </tr>
+    <tr>
+      <td>Mwanyumba</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">✔️</td>
+      <td contenteditable="false">❌</td>
+    </tr>
+  </tbody>
+</table>
+
+<script>
+  const PASSWORD = "admin123";
+
+  // Activate admin mode
+  function activateAdmin() {
+    const input = document.getElementById("adminPass").value;
+    if (input === PASSWORD) {
+      const cells = document.querySelectorAll("#tableBody td:not(:first-child)");
+      cells.forEach(cell => cell.contentEditable = true);
+      alert("Admin access granted. You can now edit payments.");
+    } else {
+      alert("Wrong password!");
+    }
+  }
+
+  // Save data to local storage
+  function saveData() {
+    const rows = document.querySelectorAll("#tableBody tr");
+    const data = [];
+
+    rows.forEach(row => {
+      const cells = row.querySelectorAll("td");
+      const rowData = [];
+      cells.forEach(cell => rowData.push(cell.innerText));
+      data.push(rowData);
+    });
+
+    localStorage.setItem("welfareData", JSON.stringify(data));
+    alert("Changes saved!");
+  }
+
+  // Add a new month to the table
+  function addMonth() {
+    const newMonth = document.getElementById("newMonth").value;
+    if (newMonth.trim() === "") {
+      alert("Please enter a valid month.");
+      return;
+    }
+    
+    // Add month to table header
+    const th = document.createElement("th");
+    th.innerText = newMonth;
+    document.querySelector("thead tr").appendChild(th);
+    
+    // Add column to each row in the body
+    const rows = document.querySelectorAll("#tableBody tr");
+    rows.forEach(row => {
+      const td = document.createElement("td");
+      td.contentEditable = "false";
+      td.innerText = "❌";
+      row.appendChild(td);
+    });
+
+    // Clear the input
+    document.getElementById("newMonth").value = "";
+  }
+
+  // Add a new member to the table
+  function addMember() {
+    const newName = document.getElementById("newName").value;
+    if (newName.trim() === "") {
+      alert("Please enter a valid name.");
+      return;
+    }
+
+    // Add member to table body
+    const tr = document.createElement("tr");
+    const tdName = document.createElement("td");
+    tdName.innerText = newName;
+    tr.appendChild(tdName);
+    
+    // Add cells for each month
+    const months = document.querySelectorAll("thead th");
+    months.forEach((month, index) => {
+      if (index !== 0) { // skip the first column (Name)
+        const td = document.createElement("td");
+        td.contentEditable = "false";
+        td.innerText = "❌";
+        tr.appendChild(td);
+      }
+    });
+
+    // Append the new row to the table body
+    document.getElementById("tableBody").appendChild(tr);
+    
+    // Clear the input
+    document.getElementById("newName").value = "";
+  }
+
+  // Load saved data from localStorage
+  function loadData() {
+    const saved = localStorage.getItem("welfareData");
+    if (saved) {
+      const data = JSON.parse(saved);
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      data.forEach(rowData => {
+        const row = document.createElement("tr");
+        rowData.forEach((cellData, index) => {
+          const cell = document.createElement("td");
+          cell.innerText = cellData;
+          if (index !== 0) cell.contentEditable = false;
+          row.appendChild(cell);
+        });
+        tbody.appendChild(row);
+      });
+    }
+  }
+
+  // Load saved data when the page is loaded
+  window.onload = loadData;
+</script>
+
+</body>
+</html>

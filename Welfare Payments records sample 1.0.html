@@ -1,0 +1,205 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Family Welfare Payments</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background-color: #f4f6f9;
+      color: #333;
+    }
+    header {
+      background-color: #007bff;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .menu {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background: #fff;
+      border-bottom: 1px solid #ccc;
+    }
+    .menu input[type="password"],
+    .menu input[type="text"] {
+      padding: 5px;
+      margin-right: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .menu button {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .menu button:hover {
+      background-color: #0056b3;
+    }
+    .search-bar {
+      text-align: center;
+      margin: 20px 10px;
+    }
+    .search-bar input {
+      width: 250px;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    table {
+      width: 95%;
+      margin: auto;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+      position: sticky;
+      top: 60px;
+    }
+    tr.family-row td {
+      background-color: #f0f0f0;
+      font-weight: bold;
+      text-align: left;
+      color: #333;
+    }
+    tfoot {
+      margin-top: 30px;
+      text-align: center;
+      font-style: italic;
+      color: #555;
+    }
+    .admin-only {
+      display: none;
+    }
+  </style>
+</head>
+<body><header>
+  <h2>Family Welfare Payments Tracker (Ksh 100/month)</h2>
+</header><div class="menu">
+  <div>
+    <input type="password" id="adminPass" placeholder="Admin Password">
+    <button onclick="activateAdmin()">Login</button>
+    <button class="admin-only" onclick="downloadFile()">Download File</button>
+  </div>
+  <div class="admin-only">
+    <input type="text" id="newMonth" placeholder="Add Month">
+    <button onclick="addMonth()">Add</button>
+    <input type="text" id="newName" placeholder="Add Member">
+    <button onclick="addMember()">Add</button>
+  </div>
+</div><div class="search-bar">
+  <input type="text" id="searchInput" onkeyup="searchName()" placeholder="Search member name...">
+</div><table id="paymentsTable">
+  <thead>
+    <tr id="tableHead">
+      <th>Name</th>
+      <th>Mar 2025</th>
+      <th>Apr 2025</th>
+      <th>May 2025</th>
+      <th>Jun 2025</th>
+      <th>Jul 2025</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody">
+    <tr class="family-row"><td colspan="6">HUSSEIN'S FAMILY</td></tr>
+    <tr><td contenteditable="false">Dorothy Wawuda</td><td></td><td></td><td></td><td></td><td></td></tr>
+    <!-- All your members here... keep appending -->
+  </tbody>
+</table><footer>
+  <p style="text-align:center; margin: 30px auto; font-size: 1rem;">
+    "Coming together is a beginning, keeping together is progress, working together is success."
+  </p>
+</footer><script>
+  const PASSWORD = "admin123";
+
+  function activateAdmin() {
+    const input = document.getElementById("adminPass").value;
+    if (input === PASSWORD) {
+      document.querySelectorAll("#paymentsTable td").forEach(cell => {
+        if (!cell.closest(".family-row")) cell.contentEditable = true;
+      });
+      document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline');
+      alert("Admin access granted. You can now edit and download data.");
+    } else {
+      alert("Wrong password!");
+    }
+  }
+
+  function addMonth() {
+    const month = document.getElementById("newMonth").value.trim();
+    if (!month) return alert("Enter a valid month");
+    const headRow = document.getElementById("tableHead");
+    const th = document.createElement("th");
+    th.innerText = month;
+    headRow.appendChild(th);
+    document.querySelectorAll("#tableBody tr").forEach(row => {
+      if (!row.classList.contains("family-row")) {
+        const td = document.createElement("td");
+        td.contentEditable = false;
+        row.appendChild(td);
+      }
+    });
+    document.getElementById("newMonth").value = "";
+  }
+
+  function addMember() {
+    const name = document.getElementById("newName").value.trim();
+    if (!name) return alert("Enter a valid name");
+    const cols = document.querySelectorAll("#tableHead th").length;
+    const tr = document.createElement("tr");
+    const tdName = document.createElement("td");
+    tdName.textContent = name;
+    tdName.contentEditable = false;
+    tr.appendChild(tdName);
+    for (let i = 1; i < cols; i++) {
+      const td = document.createElement("td");
+      td.contentEditable = false;
+      tr.appendChild(td);
+    }
+    document.getElementById("tableBody").appendChild(tr);
+    document.getElementById("newName").value = "";
+  }
+
+  function downloadFile() {
+    const html = document.documentElement.outerHTML;
+    const blob = new Blob([html], {type: 'text/html'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Family-Welfare-Payments.html';
+    link.click();
+  }
+
+  function searchName() {
+    const filter = document.getElementById("searchInput").value.toUpperCase();
+    const rows = document.querySelectorAll("#tableBody tr");
+    rows.forEach(row => {
+      if (row.classList.contains("family-row")) {
+        row.style.display = '';
+        return;
+      }
+      const cell = row.cells[0];
+      if (cell && cell.textContent.toUpperCase().includes(filter)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+</script></body>
+</html>

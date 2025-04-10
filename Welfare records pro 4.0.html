@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Welfare Tracker</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                        url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        .profile-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .profile-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 25px;
+            font-size: 16px;
+        }
+
+        .login-button {
+            background: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        .family-group {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.97);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .family-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table th {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .payment-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .paid {
+            background: #e8f5e9;
+            cursor: pointer;
+        }
+
+        .paid::after {
+            content: "✓";
+            color: #2ecc71;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .admin-controls {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+
+        .admin-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 25px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-icon" onclick="toggleLogin()">👑</div>
+
+    <div class="login-modal" id="loginModal">
+        <h2>Admin Login 🔒</h2>
+        <input type="text" id="username" class="login-input" placeholder="Username">
+        <input type="password" id="password" class="login-input" placeholder="Password">
+        <button class="login-button" onclick="login()">Login</button>
+    </div>
+
+    <div class="header">
+        <h1>Family Welfare Payment Tracker</h1>
+        <p>March 2025 Onwards</p>
+    </div>
+
+    <div class="admin-controls" id="adminControls">
+        <button class="admin-btn" onclick="showAddMemberForm()">Add Member</button>
+        <button class="admin-btn" onclick="addMonthColumn()">Add Month</button>
+    </div>
+
+    <input type="text" id="searchInput" placeholder="Search member..." onkeyup="searchMembers()">
+
+    <div id="familyContainer"></div>
+
+    <script>
+        // Complete Family Data
+        const families = {
+            "HUSSEIN'S FAMILY": [
+                "Dorothy Wawuda", "Meshack Hamisi", "Evans Kisombe", "Janeth Wawuda",
+                "Ali Wawuda", "Mnjala Wawuda", "David Ngongodi", "Hussein Ngongodi",
+                "Japheth Ngongodi", "Lydiah Kisombe", "Esther Day", "Danson Kisombe",
+                "Evans Mwanyumba", "Patrick Mbekelu", "James Warindo"
+            ],
+            "THOMAS'S FAMILY": [
+                "Priscilla Thomas", "Madeline Wawuda", "Joseph Mwashumbe",
+                "William Mwang'ombe", "Humphrey Mwamburi", "Serianah Mghoi",
+                "Julias Mwawasi", "Ronald Mbinga", "Japheth kisaka", "Priscilla Samba",
+                "Reginald Kisombe", "Metabellah Sau", "Erick Mwadime", "Wilson Mwang'ombe",
+                "Charity Zighe", "Danman Kiteto", "Priscilla Kiteto", "Mangi Kiteto",
+                "Thomas Kiteto", "Francis Kiteto", "Titus Mwawaka", "Dorcas Skayo",
+                "Erick Kighombe", "Priscilla Kighombe", "Thomas Kighombe", "Nyambu Thomas",
+                "Jedidah Kawuki", "Brian Kisombe"
+            ],
+            "NYAMBU'S FAMILY": [
+                "Nancy Kililo", "Alice Wache", "John Nyambu", "Bahati Mkaluma",
+                "Shaban Mwasambo", "Said Mwasambo", "Harun Mwasambo", "Rophus Mwasambo",
+                "Dorothy Nyambu", "Anthony Nyambu", "Brian Malombo", "Harun Nyambu",
+                "Magie Mwambela", "Nyambu Mwambela", "Nancy Mwambela", "Crispine Nyambu",
+                "Allen Nyambu", "Michael Allen", "Patrick Nyambu"
+            ],
+            "BARAZA'S FAMILY": [
+                "Rashid Mwakoto", "Rose Wawuda", "Richard Baraza", "Shaban Rashid",
+                "Richard Mwanginda", "Alloice Shaban", "Mary Wakio", "Richard Wakio",
+                "Mchoki Rashid", "Mark Rashid", "Nancy Kililo", "Shaban Mulinge",
+                "Saumu Wanyika", "Elizabeth Mkaluma", "Jefason Mwambota", "Joyce Rashid"
+            ],
+            "HAMISI'S FAMILY": [
+                "Hamisi Makuka", "Mwanaidi Hamisi", "Winnie Mkamburi", "Rose Hamisi",
+                "Makuka Rose", "Kadzo Hamisi", "Jeremiah Kilelu", "Jotham Nyambu",
+                "Jane Nyambu", "Robin Hamisi", "Paul Hamisi", "Wakio Hamisi",
+                "Mwanasiti Hamisi", "Wawuda Hamisi"
+            ],
+            "MWAKOTO'S FAMILY": [
+                "Amos Mwakoto", "Jackson Nyambu", "Hezron Kibai", "Norman Mwamburi",
+                "Josepat Mwarinda", "Oliver kilelu", "Hannah Mkandoo", "Agnes Mwakoto",
+                "Samson Nzuki", "Stephen Mwakoto", "Jackson Nyambu", "Charity kulola",
+                "Margaret Kakwasi", "Joyce Bibi", "Nancy Mwakoto", "Josephine Mwakoto",
+                "Sambo Kilelu", "Sabina Kilelu", "Victoria Kilelu", "Ezekiel Nyambu",
+                "Heri Kibai"
+            ]
+        };
+
+        let isAdmin = false;
+        let months = generateMonths();
+
+        function generateMonths() {
+            const months = [];
+            const start = new Date(2025, 2);
+            for(let i = 0; i < 12; i++) {
+                months.push(new Date(start.getFullYear(), start.getMonth() + i)
+                    .toLocaleString('default', { month: 'long', year: 'numeric' }));
+            }
+            return months;
+        }
+
+        function createFamilyGroups() {
+            const container = document.getElementById('familyContainer');
+            container.innerHTML = '';
+            
+            for(const [family, members] of Object.entries(families)) {
+                const group = document.createElement('div');
+                group.className = 'family-group';
+                
+                const header = document.createElement('div');
+                header.className = 'family-header';
+                header.innerHTML = `🏡 ${family}`;
+                
+                const table = document.createElement('table');
+                table.className = 'payment-table';
+                
+                let html = '<tr><th>Member</th>';
+                months.forEach(month => html += `<th>${month}</th>`);
+                html += '</tr>';
+                
+                members.forEach(member => {
+                    html += `<tr><td>${member}</td>`;
+                    months.forEach(month => {
+                        const paid = localStorage.getItem(`${member}-${month}`);
+                        html += `<td class="${paid ? 'paid' : ''}" 
+                                  onclick="handlePayment('${member}', '${month}')"></td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                table.innerHTML = html;
+                group.appendChild(header);
+                group.appendChild(table);
+                container.appendChild(group);
+            }
+        }
+
+        function toggleLogin() {
+            const modal = document.getElementById('loginModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if(username === 'Evans' && password === 'admin123') {
+                isAdmin = true;
+                document.getElementById('adminControls').style.display = 'block';
+                document.querySelectorAll('.paid').forEach(cell => {
+                    cell.style.cursor = 'pointer';
+                });
+                toggleLogin();
+                alert('Welcome Admin!');
+            } else {
+                alert('Invalid credentials');
+            }
+        }
+
+        function searchMembers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#familyContainer tr');
+            
+            rows.forEach(row => {
+                const name = row.cells[0]?.textContent.toLowerCase();
+                const visible = name?.includes(searchTerm);
+                row.style.display = visible ? '' : 'none';
+            });
+        }
+
+        function handlePayment(member, month) {
+            if(!isAdmin) return;
+            const cell = document.querySelector(`td[onclick="handlePayment('${member}', '${month}')"]`);
+            cell.classList.toggle('paid');
+            localStorage.setItem(`${member}-${month}`, cell.classList.contains('paid'));
+        }
+
+        // Initialize the application
+        window.onload = () => {
+            createFamilyGroups();
+            document.getElementById('adminControls').style.display = 'none';
+        };
+    </script>
+</body>
+</html>

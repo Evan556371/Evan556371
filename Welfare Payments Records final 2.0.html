@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Welfare System</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                        url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        .profile-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .family-group {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.97);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .payment-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            background: #f8f9fa;
+        }
+
+        .paid {
+            background: #e8f5e9 !important;
+        }
+
+        .admin-controls {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 25px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-icon" onclick="toggleLogin()">👑</div>
+
+    <div class="login-modal" id="loginModal">
+        <h2>Admin Login 🔒</h2>
+        <input type="text" id="username" class="login-input" placeholder="Username">
+        <input type="password" id="password" class="login-input" placeholder="Password">
+        <button class="login-button" onclick="login()">Login</button>
+    </div>
+
+    <div class="header">
+        <h1>Family Welfare Payment Tracker</h1>
+        <p>March 2025 Onwards</p>
+    </div>
+
+    <div class="admin-controls" id="adminControls">
+        <button class="admin-btn" onclick="showAddMemberForm()">➕ Add Member</button>
+        <button class="admin-btn" onclick="addMonthColumn()">📅 Add Month</button>
+        <button class="admin-btn" onclick="exportData()">📝 Export TXT</button>
+        <button class="admin-btn" onclick="exportSnapshot()">💾 Save Snapshot</button>
+    </div>
+
+    <div id="addMemberForm" style="display:none;">
+        <h3>Add New Member</h3>
+        <input type="text" id="newMemberName" placeholder="Member's Full Name">
+        <select id="familySelect">
+            <option value="HUSSEIN'S FAMILY">HUSSEIN'S FAMILY</option>
+            <option value="THOMAS'S FAMILY">THOMAS'S FAMILY</option>
+            <option value="NYAMBU'S FAMILY">NYAMBU'S FAMILY</option>
+            <option value="BARAZA'S FAMILY">BARAZA'S FAMILY</option>
+            <option value="HAMISI'S FAMILY">HAMISI'S FAMILY</option>
+            <option value="MWAKOTO'S FAMILY">MWAKOTO'S FAMILY</option>
+        </select>
+        <button class="admin-btn" onclick="addNewMember()">Add Member</button>
+    </div>
+
+    <input type="text" id="searchInput" placeholder="🔍 Search member or family..." onkeyup="searchMembers()">
+
+    <div id="familyContainer"></div>
+
+    <script>
+        const families = {
+            "HUSSEIN'S FAMILY": ["Dorothy Wawuda","Meshack Hamisi","Evans Kisombe","Janeth Wawuda","Ali Wawuda","Mnjala Wawuda","David Ngongodi","Hussein Ngongodi","Japheth Ngongodi","Lydiah Kisombe","Esther Day","Danson Kisombe","Evans Mwanyumba","Patrick Mbekelu","James Warindo"],
+            "THOMAS'S FAMILY": ["Priscilla Thomas","Madeline Wawuda","Joseph Mwashumbe","William Mwang'ombe","Humphrey Mwamburi","Serianah Mghoi","Julias Mwawasi","Ronald Mbinga","Japheth kisaka","Priscilla Samba","Reginald Kisombe","Metabellah Sau","Erick Mwadime","Wilson Mwang'ombe","Charity Zighe","Danman Kiteto","Priscilla Kiteto","Mangi Kiteto","Thomas Kiteto","Francis Kiteto","Titus Mwawaka","Dorcas Skayo","Erick Kighombe","Priscilla Kighombe","Thomas Kighombe","Nyambu Thomas","Jedidah Kawuki","Brian Kisombe"],
+            "NYAMBU'S FAMILY": ["Nancy Kililo","Alice Wache","John Nyambu","Bahati Mkaluma","Shaban Mwasambo","Said Mwasambo","Harun Mwasambo","Rophus Mwasambo","Dorothy Nyambu","Anthony Nyambu","Brian Malombo","Harun Nyambu","Magie Mwambela","Nyambu Mwambela","Nancy Mwambela","Crispine Nyambu","Allen Nyambu","Michael Allen","Patrick Nyambu"],
+            "BARAZA'S FAMILY": ["Rashid Mwakoto","Rose Wawuda","Richard Baraza","Shaban Rashid","Richard Mwanginda","Alloice Shaban","Mary Wakio","Richard Wakio","Mchoki Rashid","Mark Rashid","Nancy Kililo","Shaban Mulinge","Saumu Wanyika","Elizabeth Mkaluma","Jefason Mwambota","Joyce Rashid"],
+            "HAMISI'S FAMILY": ["Hamisi Makuka","Mwanaidi Hamisi","Winnie Mkamburi","Rose Hamisi","Makuka Rose","Kadzo Hamisi","Jeremiah Kilelu","Jotham Nyambu","Jane Nyambu","Robin Hamisi","Paul Hamisi","Wakio Hamisi","Mwanasiti Hamisi","Wawuda Hamisi"],
+            "MWAKOTO'S FAMILY": ["Amos Mwakoto","Jackson Nyambu","Hezron Kibai","Norman Mwamburi","Josepat Mwarinda","Oliver kilelu","Hannah Mkandoo","Agnes Mwakoto","Samson Nzuki","Stephen Mwakoto","Jackson Nyambu","Charity kulola","Margaret Kakwasi","Joyce Bibi","Nancy Mwakoto","Josephine Mwakoto","Sambo Kilelu","Sabina Kilelu","Victoria Kilelu","Ezekiel Nyambu","Heri Kibai"]
+        };
+
+        let appState = {
+            months: generateMonths(),
+            payments: JSON.parse(localStorage.getItem('payments')) || {},
+            isAdmin: false
+        };
+
+        function generateMonths() {
+            const months = [];
+            const start = new Date(2025, 2);
+            for(let i = 0; i < 12; i++) {
+                months.push(new Date(start.getFullYear(), start.getMonth() + i)
+                    .toLocaleString('default', { month: 'long', year: 'numeric' }));
+            }
+            return months;
+        }
+
+        function createFamilyGroups() {
+            const container = document.getElementById('familyContainer');
+            container.innerHTML = '';
+            
+            for(const [family, members] of Object.entries(families)) {
+                const group = document.createElement('div');
+                group.className = 'family-group';
+                
+                group.innerHTML = `
+                    <div class="family-header">🏡 ${family}</div>
+                    <table class="payment-table">
+                        <tr><th>Member</th>${appState.months.map(m => `<th>${m}</th>`).join('')}</tr>
+                        ${members.map(member => `
+                            <tr>
+                                <td>${member}</td>
+                                ${appState.months.map(month => `
+                                    <td class="${appState.payments[`${member}|${month}`] ? 'paid' : ''}" 
+                                        onclick="handlePayment('${member}', '${month}')"></td>
+                                `).join('')}
+                            </tr>
+                        `).join('')}
+                    </table>
+                `;
+                container.appendChild(group);
+            }
+        }
+
+        function toggleLogin() {
+            const modal = document.getElementById('loginModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function login() {
+            if(document.getElementById('username').value === 'Evans' && 
+               document.getElementById('password').value === 'admin123') {
+                appState.isAdmin = true;
+                document.getElementById('adminControls').style.display = 'block';
+                toggleLogin();
+            }
+        }
+
+        function searchMembers() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.family-group').forEach(group => {
+                const matches = Array.from(group.querySelectorAll('td')).some(td => 
+                    td.textContent.toLowerCase().includes(term)
+                );
+                group.style.display = matches ? 'block' : 'none';
+            });
+        }
+
+        function handlePayment(member, month) {
+            if(!appState.isAdmin) return;
+            const key = `${member}|${month}`;
+            appState.payments[key] = !appState.payments[key];
+            localStorage.setItem('payments', JSON.stringify(appState.payments));
+            createFamilyGroups();
+        }
+
+        function addNewMember() {
+            const name = document.getElementById('newMemberName').value.trim();
+            const family = document.getElementById('familySelect').value;
+            if(name && families[family]) {
+                families[family].push(name);
+                createFamilyGroups();
+            }
+        }
+
+        function addMonthColumn() {
+            const lastDate = new Date(appState.months[appState.months.length-1]);
+            const newMonth = new Date(lastDate.setMonth(lastDate.getMonth() + 1))
+                .toLocaleString('default', { month: 'long', year: 'numeric' });
+            appState.months.push(newMonth);
+            createFamilyGroups();
+        }
+
+        function exportData() {
+            let content = `FAMILY WELFARE PAYMENT RECORD\nGenerated: ${new Date().toLocaleString()}\n\n`;
+            
+            for(const [family, members] of Object.entries(families)) {
+                content += `\n===== ${family} =====\n`;
+                members.forEach(member => {
+                    content += `\n${member}:\n`;
+                    appState.months.forEach(month => {
+                        content += `${month}: ${appState.payments[`${member}|${month}`] ? 'Paid ✅' : 'Pending ❌'}\n`;
+                    });
+                });
+            }
+
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Payments_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+        }
+
+        function exportSnapshot() {
+            const snapshot = `
+                <!DOCTYPE html>
+                <html>
+                <head>${document.head.innerHTML}</head>
+                <body>
+                    ${document.body.innerHTML}
+                    <script>
+                        localStorage.setItem('payments', ${JSON.stringify(appState.payments)});
+                        localStorage.setItem('families', ${JSON.stringify(families)});
+                        localStorage.setItem('months', ${JSON.stringify(appState.months)});
+                    <\/script>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob([snapshot], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Welfare_Snapshot_${new Date().toISOString().split('T')[0]}.html`;
+            a.click();
+        }
+
+        // Initial load
+        window.onload = createFamilyGroups;
+    </script>
+</body>
+</html>

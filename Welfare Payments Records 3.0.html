@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Welfare Hub</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                        url('https://images.unsplash.com/photo-1556761175-5973dc0f32e7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            min-height: 100vh;
+        }
+
+        /* Profile Icon Styles */
+        .profile-icon {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            padding: 12px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .profile-icon:hover {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        /* Login Modal */
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 2000;
+            text-align: center;
+            animation: modalSlide 0.5s ease;
+        }
+
+        @keyframes modalSlide {
+            from { top: -100%; opacity: 0; }
+            to { top: 50%; opacity: 1; }
+        }
+
+        /* Family Group Styling */
+        .family-group {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.97);
+            border-left: 5px solid var(--secondary-color);
+        }
+
+        .family-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .family-header::before {
+            content: "🏡";
+            margin-right: 15px;
+            font-size: 1.5em;
+        }
+
+        /* Payment Table Styling */
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .payment-table th {
+            background: #f8f9fa;
+            color: var(--primary-color);
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .payment-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+
+        .paid {
+            background: #e8f5e9;
+            cursor: pointer;
+        }
+
+        .paid::after {
+            content: "✓";
+            color: #2ecc71;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+        }
+
+        /* Admin Controls */
+        .admin-controls {
+            text-align: center;
+            margin: 30px 0;
+            display: none;
+        }
+
+        .admin-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231,76,60,0.3);
+        }
+
+        /* Search Styling */
+        .search-container {
+            margin: 30px auto;
+            max-width: 600px;
+            position: relative;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 15px 25px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 30px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(52,152,219,0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Profile Icon -->
+    <div class="profile-icon" onclick="toggleLogin()">👑</div>
+
+    <!-- Login Modal -->
+    <div class="login-modal" id="loginModal">
+        <h2 style="margin-bottom:25px;">Admin Portal 🔒</h2>
+        <input type="text" id="username" class="login-input" placeholder="🌐 Username">
+        <input type="password" id="password" class="login-input" placeholder="🔑 Password">
+        <button class="login-button" onclick="login()">🚀 Access Dashboard</button>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1 style="font-size:2.5em; color:#2c3e50; margin-bottom:10px;">Family Welfare Tracker</h1>
+        <p style="font-size:1.2em; color:#7f8c8d;">March 2025 Onwards | United Together 🤝</p>
+    </div>
+
+    <!-- Admin Controls -->
+    <div class="admin-controls" id="adminControls">
+        <button class="admin-btn" onclick="showAddMemberForm()"><span>➕</span> Add Member</button>
+        <button class="admin-btn" onclick="addMonthColumn()"><span>📅</span> Add Month</button>
+        <button class="admin-btn" onclick="exportData()"><span>📥</span> Export Data</button>
+    </div>
+
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="🔍 Search family or member..." onkeyup="searchMembers()">
+    </div>
+
+    <!-- Family Groups Container -->
+    <div id="familyContainer"></div>
+
+    <!-- Quote -->
+    <div class="quote" style="text-align:center; margin:40px 0; font-size:1.1em; color:#7f8c8d;">
+        "Family is the compass that guides us to our true north." 🌟
+    </div>
+
+    <script>
+        // Complete Family Data
+        const families = {
+            "HUSSEIN'S FAMILY": [
+                "Dorothy Wawuda", "Meshack Hamisi", "Evans Kisombe", "Janeth Wawuda",
+                "Ali Wawuda", "Mnjala Wawuda", "David Ngongodi", "Hussein Ngongodi",
+                "Japheth Ngongodi", "Lydiah Kisombe", "Esther Day", "Danson Kisombe",
+                "Evans Mwanyumba", "Patrick Mbekelu", "James Warindo"
+            ],
+            "THOMAS'S FAMILY": [
+                "Priscilla Thomas", "Madeline Wawuda", "Joseph Mwashumbe",
+                "William Mwang'ombe", "Humphrey Mwamburi", "Serianah Mghoi",
+                "Julias Mwawasi", "Ronald Mbinga", "Japheth kisaka", "Priscilla Samba",
+                "Reginald Kisombe", "Metabellah Sau", "Erick Mwadime", "Wilson Mwang'ombe",
+                "Charity Zighe", "Danman Kiteto", "Priscilla Kiteto", "Mangi Kiteto",
+                "Thomas Kiteto", "Francis Kiteto", "Titus Mwawaka", "Dorcas Skayo",
+                "Erick Kighombe", "Priscilla Kighombe", "Thomas Kighombe", "Nyambu Thomas",
+                "Jedidah Kawuki", "Brian Kisombe"
+            ],
+            "NYAMBU'S FAMILY": [
+                "Nancy Kililo", "Alice Wache", "John Nyambu", "Bahati Mkaluma",
+                "Shaban Mwasambo", "Said Mwasambo", "Harun Mwasambo", "Rophus Mwasambo",
+                "Dorothy Nyambu", "Anthony Nyambu", "Brian Malombo", "Harun Nyambu",
+                "Magie Mwambela", "Nyambu Mwambela", "Nancy Mwambela", "Crispine Nyambu",
+                "Allen Nyambu", "Michael Allen", "Patrick Nyambu"
+            ],
+            "BARAZA'S FAMILY": [
+                "Rashid Mwakoto", "Rose Wawuda", "Richard Baraza", "Shaban Rashid",
+                "Richard Mwanginda", "Alloice Shaban", "Mary Wakio", "Richard Wakio",
+                "Mchoki Rashid", "Mark Rashid", "Nancy Kililo", "Shaban Mulinge",
+                "Saumu Wanyika", "Elizabeth Mkaluma", "Jefason Mwambota", "Joyce Rashid"
+            ],
+            "HAMISI'S FAMILY": [
+                "Hamisi Makuka", "Mwanaidi Hamisi", "Winnie Mkamburi", "Rose Hamisi",
+                "Makuka Rose", "Kadzo Hamisi", "Jeremiah Kilelu", "Jotham Nyambu",
+                "Jane Nyambu", "Robin Hamisi", "Paul Hamisi", "Wakio Hamisi",
+                "Mwanasiti Hamisi", "Wawuda Hamisi"
+            ],
+            "MWAKOTO'S FAMILY": [
+                "Amos Mwakoto", "Jackson Nyambu", "Hezron Kibai", "Norman Mwamburi",
+                "Josepat Mwarinda", "Oliver kilelu", "Hannah Mkandoo", "Agnes Mwakoto",
+                "Samson Nzuki", "Stephen Mwakoto", "Jackson Nyambu", "Charity kulola",
+                "Margaret Kakwasi", "Joyce Bibi", "Nancy Mwakoto", "Josephine Mwakoto",
+                "Sambo Kilelu", "Sabina Kilelu", "Victoria Kilelu", "Ezekiel Nyambu",
+                "Heri Kibai"
+            ]
+        };
+
+        // Initialization
+        let isAdmin = false;
+        let months = generateMonths();
+
+        function generateMonths() {
+            const months = [];
+            const start = new Date(2025, 2); // March 2025
+            for(let i = 0; i < 12; i++) {
+                months.push(new Date(start.getFullYear(), start.getMonth() + i)
+                    .toLocaleString('default', { month: 'long', year: 'numeric' }));
+            }
+            return months;
+        }
+
+        function createFamilyGroups() {
+            const container = document.getElementById('familyContainer');
+            container.innerHTML = '';
+            
+            for(const [family, members] of Object.entries(families)) {
+                const group = document.createElement('div');
+                group.className = 'family-group';
+                
+                // Family Header
+                const header = document.createElement('div');
+                header.className = 'family-header';
+                header.innerHTML = `${family}`;
+                
+                // Payment Table
+                const table = document.createElement('table');
+                table.className = 'payment-table';
+                
+                // Table Header
+                let html = '<tr>';
+                html += `<th>Member</th>`;
+                months.forEach(month => html += `<th>${month}</th>`);
+                html += '</tr>';
+                
+                // Table Body
+                members.forEach(member => {
+                    html += `<tr><td>${member}</td>`;
+                    months.forEach(month => {
+                        const paid = localStorage.getItem(`${member}-${month}`);
+                        html += `<td class="${paid ? 'paid' : ''}" 
+                                  onclick="handlePayment('${member}', '${month}')"></td>`;
+                    });
+                    html += '</tr>';
+                });
+                
+                table.innerHTML = html;
+                group.appendChild(header);
+                group.appendChild(table);
+                container.appendChild(group);
+            }
+        }
+
+        // Rest of the functionality remains similar with enhanced UI interactions
+        // [Include all previous JavaScript functions from earlier versions]
+        
+        // Initialize the family groups
+        window.onload = createFamilyGroups;
+    </script>
+</body>
+</html>
